@@ -1,0 +1,32 @@
+#
+# .travis.yml - configuration file for the travis continuous integration service
+#
+# see http://about.travis-ci.org/docs/user/languages/php for more hints
+#
+language: php
+
+env:
+  - OPCODE_CACHE=apc
+
+php:
+  - 5.3
+  - 5.4
+
+services:
+  - memcached
+
+before_script: php ./bin/travis-setup.php $OPCODE_CACHE
+
+before_install:
+  - composer install --dev
+  - git submodule update --init --recursive
+
+script:
+  # ant php-cs-fixer
+  # ant utf8-encoding-check
+  # ant phpcs
+  - ant phpunit
+
+notifications:
+  irc: "irc.freenode.org#koch"
+  email: false

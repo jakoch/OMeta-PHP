@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+    backupGlobals="false"
+    backupStaticAttributes="false"
+    colors="true"
+    convertErrorsToExceptions="true"
+    convertNoticesToExceptions="true"
+    convertWarningsToExceptions="true"
+    processIsolation="false"
+    stopOnFailure="false"
+    strict="true"
+    syntaxCheck="false"
+    verbose="true"
+    bootstrap="./bootstrap.php">
+
+    <testsuite name="Koch Framework Test Suite">
+        <directory>./</directory>
+    </testsuite>
+
+    <filter>
+        <whitelist addUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">../framework/</directory>
+        </whitelist>
+    </filter>
+
+    <logging>
+        <log type="coverage-clover" target="../build/logs/clover.xml" />
+        <log type="coverage-html"   target="../build/coverage" title="Koch Framework" />
+        <log type="junit"           target="../build/logs/junit.xml" />
+    </logging>
+</phpunit>
