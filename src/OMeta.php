@@ -1,6 +1,11 @@
 <?php
+namespace Phpc;
+
 /**
- * OMeta "class" and basic functionality
+ * OMeta Base class provides basic functionality.
+ *
+ * This is the OMeta Base class providing implementations of the fundamental OMeta operations.
+ * Built-in rules are defined here.
  */
 class OMeta
 {
@@ -9,22 +14,23 @@ class OMeta
     $memoRec = $this->input->memo[$rule];
     if ($memoRec == null) {
       $origInput = $this->input;
-      $failer = new Failer();
+      $LeftRecursion = new LeftRecursion();
       if ($this[$rule] === null) {
-        throw new Exception('tried to apply undefined rule "' . $rule . '"');
+        throw new Exception('Tried to apply undefined rule "' . $rule . '"');
       }
-      $this->input->memo[$rule] = $failer
-      $this->input->memo[$rule] = $memoRec = {ans: $this[$rule](), $nextInput: $this->input}
-      if ($failer.used) {
+      $this->input->memo[$rule] = $LeftRecursion;
+      $this->input->memo[$rule] = $memoRec = array('ans' => $this[$rule](), "nextInput" => $this->input);
+      if ($LeftRecursion->used) {
         $sentinel = $this->input;
         while (true) {
           try {
             $this->input = $origInput;
             $ans = $this[$rule]();
-            if ($this->input == sentinel)
-              throw fail
-            $memoRec.ans = $ans;
-            $memoRec.nextInput = $this->input;
+            if ($this->input == sentinel) {
+              throw new ParseError('ParseError: ');
+            }
+            $memoRec->ans = $ans;
+            $memoRec->nextInput = $this->input;
           }
           catch (f) {
             if (f != fail)
@@ -33,13 +39,14 @@ class OMeta
           }
         }
       }
+    } else {
+      if ($memoRec instanceof LeftRecursion) {
+      $memoRec->used = true;
+      throw new fail;
+      }
     }
-    else if ($memoRec instanceof Failer) {
-      $memoRec.used = true;
-      throw new fail
-    }
-    $this->input = $memoRec.nextInput;
-    return $memoRec.ans;
+    $this->input = $memoRec->nextInput;
+    return $memoRec->ans;
   }
 
   /**
@@ -47,28 +54,29 @@ class OMeta
    *       so they can't be left-recursive!
    */
   public function _applyWithArgs($rule) {
-    $ruleFn = this[$rule]
-    $ruleFnArity = strlen($ruleFn)
+    $ruleFn = $this[$rule];
+    $ruleFnArity = strlen($ruleFn);
     for ($idx = strlen($arguments) - 1; $idx >= $ruleFnArity + 1; $idx--) {
       // prepend "extra" arguments in reverse order
       $this->_prependInput($arguments[$idx]);
     }
-    return $ruleFnArity == 0 ?
+    return ($ruleFnArity == 0) ?
              $ruleFn() :
              $ruleFn.apply(this, Array.prototype.slice.call($arguments, 1, $ruleFnArity + 1));
   }
 
   public function _superApplyWithArgs($recv, $rule) {
-    $ruleFn = this[$rule]
-    $ruleFnArity = strlen($ruleFn)
+    $ruleFn = $this[$rule];
+    $ruleFnArity = strlen($ruleFn);
     for ($idx = strlen($arguments) - 1; $idx > $ruleFnArity + 2; $idx--) // prepend "extra" arguments in reverse order
-      recv._prependInput($arguments[$idx])
-    return $ruleFnArity == 0 ?
+      $recv._prependInput($arguments[$idx]);
+    return ($ruleFnArity == 0) ?
              $ruleFn.call($recv) :
              $ruleFn.apply($recv, Array.prototype.slice.call($arguments, 2, $ruleFnArity + 2))
   }
+
   public function _prependInput($v) {
-    $this->input = new OMInputStream($v, $this->input)
+    $this->input = new OMInputStream($v, $this->input);
   }
 
   // if you want your grammar (and its subgrammars) to memoize parameterized rules, invoke this method on it:
@@ -76,23 +84,25 @@ class OMeta
     $this->_prependInput = function($v) {
       $newInput = '';
       if (isImmutable($v)) {
-        newInput = $this->input[getTag($v)]
-        if (!newInput) {
-          newInput = new OMInputStream($v, $this->input)
-          $this->input[getTag($v)] = newInput
+        $newInput = $this->input[getTag($v)];
+        if (!$newInput) {
+          $newInput = new OMInputStream($v, $this->input);
+          $this->input[getTag($v)] = $newInput;
         }
+      } else {
+          $newInput = new OMInputStream($v, $this->input);
       }
-      else newInput = new OMInputStream($v, $this->input)
-      $this->input = newInput
+      $this->input = $newInput;
     }
+    /*
     $this->_applyWithArgs = function($rule) {
-      $ruleFnArity = strlen(this[$rule])
-      for ($$idx = strlen($arguments) - 1; $idx >= $ruleFnArity + 1; $idx--) // prepend "extra" arguments in reverse order
-        $this->_prependInput($arguments[$idx])
-      return $ruleFnArity == 0 ?
+      $ruleFnArity = strlen($this[$rule]);
+      for ($idx = strlen($arguments) - 1; $idx >= $ruleFnArity + 1; $idx--) // prepend "extra" arguments in reverse order
+        $this->_prependInput($arguments[$idx]);
+      return (($ruleFnArity == 0)) ?
                $this->_apply($rule) :
-               this[$rule].apply(this, Array.prototype.slice.call($arguments, 1, $ruleFnArity + 1))
-    }
+               this[$rule].apply(this, Array.prototype.slice.call($arguments, 1, $ruleFnArity + 1));
+    }*/
   }
 
   public function _pred($b) {
@@ -111,70 +121,77 @@ class OMeta
       $this->input = $origInput;
       return true;
     }
-    throw fail
+    throw new ParseError('ParseError: ');
   }
 
   public function _lookahead($x) {
     $origInput = $this->input;
-        $r = $x();
-    $this->input = $origInput
+    $r = $x();
+    $this->input = $origInput;
     return $r;
   }
 
   public function _or() {
     $origInput = $this->input;
     for ($idx = 0; $idx < strlen($arguments); $idx++)
-      try { $this->input = $origInput; return $arguments[$idx]() }
-      catch (f) {
+      try {
+        $this->input = $origInput;
+        return $arguments[$idx]();
+      } catch(f) {
         if (f != fail)
           throw f
       }
-    throw fail
+    throw new ParseError('ParseError: ');
   }
+
   public function _xor($ruleName) {
     $origInput = $this->input, $idx = 1, $newInput, $ans;
     while ($idx < strlen($arguments)) {
       try {
         $this->input = $origInput;
         $ans = $arguments[$idx]()
-        if ($newInput)
+        if ($newInput) {
           throw new Exception('more than one choice matched by "exclusive-OR" in ' . $ruleName);
+        }
         $newInput = $this->input;
-      }
-      catch (f) {
-        if (f != fail)
+      } catch (f) {
+        if (f != fail) {
           throw f
+        }
       }
       $idx++;
     }
-    if ($newInput) {
+    if($newInput) {
       $this->input = $newInput;
       return $ans;
+    } else {
+      throw new ParseError('ParseError: ');
     }
-    else
-      throw fail
   }
+
   public function disableXORs() {
     $this->_xor = $this->_or;
   }
 
-  public function _opt(x) {
+  public function _opt($x) {
     $origInput = $this->input;
     $ans = '';
-    try { $ans = x() }
-    catch (f) {
-      if (f != fail)
-        throw f
+    try {
+        $ans = x();
+    } catch (f) {
+      if (f != fail) {
+        throw f;
+      }
       $this->input = $origInput;
     }
     return $ans;
   }
 
-  public function _many(x) {
+  public function _many($x) {
     $ans = $arguments[1] != undefined ? [$arguments[1]] : [];
     while (true) {
       $origInput = $this->input;
-      try { ans.push(x()) }
+      try { ans.push($x()) }
       catch (f) {
         if (f != fail)
           throw f
@@ -191,7 +208,7 @@ class OMeta
   public function _form($x) {
     $v = $this->_apply("anything");
     if (!isSequenceable($v))
-      throw fail
+      throw new ParseError('ParseError: ');
     $origInput = $this->input;
     $this->input = $v.toOMInputStream();
     $r = $x();
@@ -245,29 +262,43 @@ class OMeta
         if ($allDone)
           return $ans;
         else
-          throw fail
+          throw new ParseError('ParseError: ');
       }
     }
   }
 
-  public function _currIdx() { return $this->input.idx; }
+  public function _currIdx() {
+      return $this->input.idx;
+  }
 
-  // some basic rules
+  /**
+   * ================
+   * some basic rules
+   * ================
+   */
+
+  /**
+   * Match a single item from the input of any kind.
+   */
   public function anything() {
     $r = $this->input.head();
     $this->input = $this->input.tail();
     return r;
   }
+
   public function end() {
     return $this->_not(function() {
       return $this->_apply("anything"); }
     );
   }
+
   public function pos() {
     return $this->input.idx;
   }
 
-  public function empty() { return true; }
+  public function empty() {
+    return true;
+  }
 
   public function apply($r) {
     return $this->_apply($r);
@@ -280,11 +311,21 @@ class OMeta
     return $ans;
   }
 
-  // some useful "derived" rules
+  /**
+   * ===========================
+   * some useful "derived" rules
+   * ===========================
+   */
+
+  /**
+   * Match a single item from the input equal to the given specimen.
+   * @param $wanted What to match.
+   */
   public function exactly($wanted) {
-    if ($wanted === $this->_apply("anything"));
+    if ($wanted === $this->_apply("anything")) {
       return $wanted;
-    throw fail
+    }
+    throw new ParseError('ParseError: ');
   }
 
   public function "true"() {
@@ -292,11 +333,13 @@ class OMeta
     $this->_pred($r === true);
     return r;
   }
+
   public function "false"() {
     $r = $this->_apply("anything");
     $this->_pred($r === false)
     return r;
   }
+
   public function "undefined"() {
     $r = $this->_apply("anything");
     $this->_pred($r === null)
@@ -307,21 +350,25 @@ class OMeta
     $this->_pred(typeof $r === "number");
     return r;
   }
+
   public function string() {
     $r = $this->_apply("anything");
     $this->_pred(typeof $r === "string");
     return r;
   }
+
   public function "char"() {
     $r = $this->_apply("anything");
     $this->_pred(typeof $r === "string" && strlen($r) == 1);
     return r;
   }
+
   public function space() {
     $r = $this->_apply("char");
     $this->_pred($r.charCodeAt(0) <= 32);
     return r;
   }
+
   public function spaces() {
     return $this->_many(function() {
       return $this->_apply("space"); }
@@ -337,23 +384,35 @@ class OMeta
   public function lower() {
     $r = $this->_apply("char");
     $this->_pred($r >= "a" && r <= "z");
-    return r;
+    return $r;
   }
+
   public function upper() {
     $r = $this->_apply("char");
     $this->_pred($r >= "A" && r <= "Z");
-    return r;
+    return $r;
   }
+
   public function letter() {
-    return $this->_or(function() { return $this->_apply("lower"); },
-                    function() { return $this->_apply("upper"); });
+    return $this->_or(
+        function() { return $this->_apply("lower"); },
+        function() { return $this->_apply("upper"); }
+    );
   }
+
   public function letterOrDigit()) {
-    return $this->_or(function() { return $this->_apply("letter"); },
-                    function() { return $this->_apply("digit"); });
+    return $this->_or(
+        function() { return $this->_apply("letter"); },
+        function() { return $this->_apply("digit"); }
+    );
   }
+
   public function firstAndRest($first, $rest) {
-     return $this->_many(function() { return $this->_apply($rest); }, $this->_apply($first));
+     return $this->_many(function() {
+            return $this->_apply($rest);
+        },
+        $this->_apply($first)
+     );
   }
 
   public function seq($xs) {
@@ -399,9 +458,6 @@ class OMeta
                             });
   }
 
-  public function initialize() {
-  }
-
   // match and matchAll are a grammar's "public interface"
   public function _genericMatch($input, $rule, $args, $matchFailed) {
     if ($args == null)
@@ -435,11 +491,11 @@ class OMeta
   }
 
   public function createInstance() {
-      $m = objectThatDelegatesTo($this)
-      $m->initialize()
+      $m = objectThatDelegatesTo($this);
+      $m->initialize();
       $m->matchAll = function($listyObj, $aRule) {
-        $this->input = $listyObj->toOMInputStream()
-        return $this->_apply($aRule)
+        $this->input = $listyObj->toOMInputStream();
+        return $this->_apply($aRule);
       }
       return $m;
   }

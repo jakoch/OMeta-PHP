@@ -1,0 +1,32 @@
+{
+    "name": "jakoch/phpc",
+    "description": "phpc",
+    "license": "GPL-2.0+",
+    "keywords": ["phpc"],
+    "type": "library",
+    "authors": [
+        {
+            "name": "Jens-André Koch",
+            "email": "jakoch@web.de"
+        }
+    ],
+    "support": {
+        "irc": "irc://irc.freenode.org/koch",
+        "source": "https://github.com/jakoch/phpc/",
+        "issues": "https://github.com/jakoch/phpc/issues/"
+    },
+    "require": {
+        "php"                             : ">=5.3.8"
+    },
+    "require-dev": {
+        "mikey179/vfsStream"              : "*",
+        "phpunit/PHPUnit"                 : "3.7.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "Phpc\\": "src/",
+            "PhpcTest\\": "tests/"
+        }
+    },
+    "minimum-stability": "dev"
+}
