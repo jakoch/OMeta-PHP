@@ -27,17 +27,17 @@ class OMetaBase
     if ($memoRec == null) {
       $origInput = $this->input;
       $leftRecursion = new LeftRecursion();
-      if ($this[$rule] === null) {
+      if (method_exists($this, $rule) === null) {
         throw new Exception(sprintf('No rule named %s.', $rule));
       }
       $this->input->memo[$rule] = $leftRecursion;
-      $this->input->memo[$rule] = $memoRec = array('ans' => $this[$rule](), "nextInput" => $this->input);
+      $this->input->memo[$rule] = $memoRec = array('ans' => $this->$rule(), "nextInput" => $this->input);
       if ($leftRecursion->used) {
         $sentinel = $this->input;
         while (true) {
           try {
             $this->input = $origInput;
-            $ans = $this[$rule]();
+            $ans = $this->$rule();
             if ($this->input == $sentinel) {
               throw new ParseError('ParseError: ');
             }
@@ -67,7 +67,7 @@ class OMetaBase
    */
   public function _applyWithArgs($rule, $arguments)
   {
-    $ruleFn = $this[$rule];
+    $ruleFn = $this->$rule();
     $ruleFnArity = strlen($ruleFn);
     for ($idx = func_num_args() - 1; $idx >= $ruleFnArity + 1; $idx--) {
       // prepend "extra" arguments in reverse order
@@ -84,7 +84,7 @@ class OMetaBase
 
   public function _superApplyWithArgs($recv, $rule)
   {
-    $ruleFn = $this[$rule];
+    $ruleFn = $this->rule();
     $ruleFnArity = strlen($ruleFn);
     for ($idx = func_num_args() - 1; $idx > $ruleFnArity + 2; $idx--) {
       // prepend "extra" arguments in reverse order
@@ -119,6 +119,12 @@ class OMetaBase
           $newInput = new OMInputStream($v, $this->input);
       }
       $this->input = $newInput;
+    }*/
+     /*$this->_applyWithArgs() = function($rule) {
+      for ($idx = func_num_args() - 1; $idx > 0; $idx--) {
+        $this->_prependInput(func_get_arg(idx));
+      }
+      return $this->_apply($rule);
     }*/
   }
 
