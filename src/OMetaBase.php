@@ -355,7 +355,7 @@ class OMetaBase
     return $this->_apply($rule);
   }
 
-  public function foreign($grammar, $rule)
+  public function rule_foreign($grammar, $rule)
   {
     $grammar_instace = objectThatDelegatesTo($grammar, array( 'input' => makeOMInputStreamProxy($this->input)));
     $ans = $grammar_instance->_apply($rule);
@@ -411,58 +411,58 @@ class OMetaBase
     return $rule;
   }
 
-  public function char() {
+  public function rule_char() {
     $rule = $this->_apply("anything");
     $this->_pred(gettype($rule) === "string" && strlen($rule) == 1);
     return $rule;
   }
 
-  public function space()
+  public function rule_space()
   {
     $rule = $this->_apply("char");
     $this->_pred($rule->charCodeAt(0) <= 32);
     return $rule;
   }
 
-  public function spaces()
+  public function rule_spaces()
   {
     return $this->_many(function() {
       return $this->_apply("space"); }
     );
   }
 
-  public function digit()
+  public function rule_digit()
   {
     $rule = $this->_apply("char");
     $this->_pred($rule >= "0" && $rule <= "9");
     return $rule;
   }
 
-  public function lower()
+  public function rule_lower()
   {
     $rule = $this->_apply("char");
     $this->_pred($rule >= "a" && r <= "z");
     return $rule;
   }
 
-  public function upper()
+  public function rule_upper()
   {
     $rule = $this->_apply("char");
     $this->_pred($rule >= "A" && r <= "Z");
     return $rule;
   }
 
-  public function letter()
+  public function rule_letter()
   {
     return $this->_or($this->_apply("lower"), $this->_apply("upper"));
   }
 
-  public function letterOrDigit()
+  public function rule_letterOrDigit()
   {
     return $this->_or($this->_apply("letter"), $this->_apply("digit"));
   }
 
-  public function firstAndRest($first, $rest)
+  public function rule_firstAndRest($first, $rest)
   {
      return $this->_many(function() {
             return $this->_apply($rest);
@@ -471,7 +471,7 @@ class OMetaBase
      );
   }
 
-  public function seq($xs)
+  public function rule_seq($xs)
   {
     for ($idx = 0; $idx < strlen($xs); $idx++) {
       $this->_applyWithArgs("rule_exactly", $xs[$idx]);
@@ -479,7 +479,7 @@ class OMetaBase
     return $xs;
   }
 
-  public function notLast($rule)
+  public function rule_notLast($rule)
   {
     $rule = $this->_apply($rule);
     $this->_lookahead( function() {
@@ -488,7 +488,7 @@ class OMetaBase
     return $rule;
   }
 
-  public function listOf($rule, $delim)
+  public function rule_listOf($rule, $delim)
   {
     return $this->_or(
         function() {
@@ -576,23 +576,27 @@ class OMetaBase
   }*/
 }
 
-function objectThatDelegatesTo($x, $props)
-{
-  $rule = new $x();
-  foreach ($props as $p) {
-    if (property_exists($props, $p)) {
-      $rule[$p] = $props[$p];
-    }
-  }
+if(false === function_exists('objectThatDelegatesTo')) {
+    function objectThatDelegatesTo($x, $props)
+    {
+      $rule = new $x();
+      foreach ($props as $p) {
+        if (property_exists($props, $p)) {
+          $rule[$p] = $props[$p];
+        }
+      }
 
-  return $rule;
+      return $rule;
+    }
 }
 
-function isImmutable($x)
-{
-   return $x === null
-    || gettype($x) === "undefined"
-    || gettype($x) === "boolean"
-    || gettype($x) === "number"
-    || gettype($x) === "string";
+if(false === function_exists('isImmutable')) {
+    function isImmutable($x)
+    {
+       return $x === null
+        || gettype($x) === "undefined"
+        || gettype($x) === "boolean"
+        || gettype($x) === "number"
+        || gettype($x) === "string";
+    }
 }
