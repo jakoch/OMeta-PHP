@@ -570,14 +570,15 @@ class OMetaBase
     $m = objectThatDelegatesTo($this, array('input' => $input));
     $m->initialize();
     try {
-        return strlen($realArgs) == 1 ? $m->_apply($m, $realArgs[0]) : $m->_applyWithArgs($m, $realArgs);
+        return strlen($realArgs) == 1 ? $m->_apply($m) : $m->_applyWithArgs($m, $realArgs);
     } catch (Exception $e) {
       if ($e == Failure && $matchFailed != null) {
         $input = $m->input;
-        if ($input->idx != null) {
-          while ($input->tl != undefined && $input->tl->idx != null)
-            $input = $input->tl;
-          $input->idx--;
+        if ($input->index != null) {
+          while ($input->tail != undefined && $input->tail()->index != null) {
+            $input = $input->tail;
+            $input->index--;
+          }
         }
 
         return matchFailed($m, $input->index);
