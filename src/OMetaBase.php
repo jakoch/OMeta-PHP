@@ -21,7 +21,7 @@ class OMetaBase
         $this->dictionary = $dictionary;
     }*/
 
-  public function _apply()
+  public function _apply($rule)
   {
     $memoRec = $this->input->memo[$rule];
     if ($memoRec == null) {
@@ -52,8 +52,8 @@ class OMetaBase
       }
     } else {
       if ($memoRec instanceof LeftRecursion) {
-      $memoRec->used = true;
-      throw new fail;
+        $memoRec->used = true;
+        throw new fail;
       }
     }
     $this->input = $memoRec->nextInput;
@@ -65,7 +65,7 @@ class OMetaBase
    * Note: _applyWithArgs and _superApplyWithArgs are not memoized,
    *       so they can't be left-recursive!
    */
-  public function _applyWithArgs($rule)
+  public function _applyWithArgs($rule, $arguments)
   {
     $ruleFn = $this[$rule];
     $ruleFnArity = strlen($ruleFn);
@@ -211,13 +211,14 @@ class OMetaBase
     $origInput = $this->input;
     $ans = '';
     try {
-        $ans = x();
+        $ans = $x();
     } catch (Exception $e) {
       if ($e != Failure) {
          throw $e;
       }
       $this->input = $origInput;
     }
+
     return $ans;
   }
 
@@ -247,14 +248,14 @@ class OMetaBase
 
   public function _form($x)
   {
-    $v = $this->_apply("anything");
+    $v = $this->_apply("rule_anything");
     if (!isSequenceable($v)) {
       throw new ParseError('ParseError: ');
     }
     $origInput = $this->input;
     $this->input = $v->toOMInputStream();
     $rule = $x();
-    $this->_apply("end");
+    $this->_apply("rule_end");
     $this->input = $origInput;
 
     return $v;
@@ -264,6 +265,7 @@ class OMetaBase
   {
     $origInput = $this->input;
     $x();
+
     return $origInput->upTo($this->input);
   }
 
@@ -271,6 +273,7 @@ class OMetaBase
   {
     $origInput = $this->input;
     $x();
+
     return array('fromIdx' => $origInput->idx, 'toIdx' => $this->input->idx);
   }
 
@@ -333,25 +336,29 @@ class OMetaBase
   {
     $rule = $this->input->head();
     $this->input = $this->input->tail();
+
     return $rule;
   }
 
   public function rule_end()
   {
     return $this->_not(function() {
-      return $this->_apply("anything"); }
+      return $this->_apply("rule_anything"); }
     );
   }
 
-  public function pos() {
+  public function pos()
+  {
     return $this->input->idx;
   }
 
-  public function rule_empty() {
+  public function rule_empty()
+  {
     return true;
   }
 
-  public function apply($rule) {
+  public function apply($rule)
+  {
     return $this->_apply($rule);
   }
 
@@ -374,92 +381,109 @@ class OMetaBase
    * Match a single item from the input equal to the given specimen.
    * @param $wanted What to match.
    */
-  public function rule_exactly($wanted) {
-    if ($wanted === $this->_apply("anything")) {
+  public function rule_exactly($wanted)
+  {
+    if ($wanted === $this->_apply("rule_anything")) {
       return $wanted;
     }
     throw new ParseError('ParseError: ');
   }
 
-  public function rule_true() {
-    $rule = $this->_apply("anything");
+  public function rule_true()
+  {
+    $rule = $this->_apply("rule_anything");
     $this->_pred($rule === true);
+
     return $rule;
   }
 
-  public function rule_false() {
-    $rule = $this->_apply("anything");
+  public function rule_false()
+  {
+    $rule = $this->_apply("rule_anything");
     $this->_pred($rule === false);
+
     return $rule;
   }
 
-  public function rule_undefined() {
-    $rule = $this->_apply("anything");
+  public function rule_undefined()
+  {
+    $rule = $this->_apply("rule_anything");
     $this->_pred($rule === null);
+
     return $rule;
   }
 
-  public function rule_number() {
-    $rule = $this->_apply("anything");
+  public function rule_number()
+  {
+    $rule = $this->_apply("rule_anything");
     $this->_pred(gettype($rule) === "number");
+
     return $rule;
   }
 
-  public function rule_string() {
-    $rule = $this->_apply("anything");
+  public function rule_string()
+  {
+    $rule = $this->_apply("rule_anything");
     $this->_pred(gettype($rule) === "string");
+
     return $rule;
   }
 
-  public function rule_char() {
-    $rule = $this->_apply("anything");
+  public function rule_char()
+  {
+    $rule = $this->_apply("rule_anything");
     $this->_pred(gettype($rule) === "string" && strlen($rule) == 1);
+
     return $rule;
   }
 
   public function rule_space()
   {
-    $rule = $this->_apply("char");
+    $rule = $this->_apply("rule_char");
     $this->_pred($rule->charCodeAt(0) <= 32);
+
     return $rule;
   }
 
   public function rule_spaces()
   {
     return $this->_many(function() {
-      return $this->_apply("space"); }
+      return $this->_apply("rule_space"); }
     );
   }
 
   public function rule_digit()
   {
-    $rule = $this->_apply("char");
+    $rule = $this->_apply("rule_char");
     $this->_pred($rule >= "0" && $rule <= "9");
+
     return $rule;
   }
 
   public function rule_lower()
   {
-    $rule = $this->_apply("char");
+    $rule = $this->_apply("rule_char");
     $this->_pred($rule >= "a" && r <= "z");
+
     return $rule;
   }
 
   public function rule_upper()
   {
-    $rule = $this->_apply("char");
+    $rule = $this->_apply("rule_char");
     $this->_pred($rule >= "A" && r <= "Z");
+
     return $rule;
   }
 
   public function rule_letter()
   {
-    return $this->_or($this->_apply("lower"), $this->_apply("upper"));
+    return $this->_or($this->_apply("rule_lower"), $this->_apply("rule_upper"));
   }
 
   public function rule_letterOrDigit()
   {
-    return $this->_or($this->_apply("letter"), $this->_apply("digit"));
+    return $this->_or($this->_apply("rule_letter"), $this->_apply("rule_digit"));
   }
 
   public function rule_firstAndRest($first, $rest)
@@ -476,6 +500,7 @@ class OMetaBase
     for ($idx = 0; $idx < strlen($xs); $idx++) {
       $this->_applyWithArgs("rule_exactly", $xs[$idx]);
     }
+
     return $xs;
   }
 
@@ -485,6 +510,7 @@ class OMetaBase
     $this->_lookahead( function() {
         return $this->_apply($rule);
     });
+
     return $rule;
   }
 
@@ -493,9 +519,11 @@ class OMetaBase
     return $this->_or(
         function() {
             $rule = $this->_apply($rule);
+
             return $this->_many(
                 function() {
-                    $this->_applyWithArgs("token", $delim);
+                    $this->_applyWithArgs("rule_token", $delim);
+
                     return $this->_apply($rule);
                 },
                 $rule);
@@ -506,22 +534,23 @@ class OMetaBase
     );
   }
 
-  public function token($cs)
+  public function rule_token($cs)
   {
-    $this->_apply("spaces");
-    return $this->_applyWithArgs("seq", $cs);
+    $this->_apply("rule_spaces");
+
+    return $this->_applyWithArgs("rule_seq", $cs);
   }
 
   public function fromTo($x, $y)
   {
     return $this->_consumedBy(
         function() {
-            $this->_applyWithArgs("seq", x);
+            $this->_applyWithArgs("rule_seq", x);
             $this->_many(function() {
-              $this->_not(function() { $this->_applyWithArgs("seq", y); });
-              $this->_apply("char");
+              $this->_not(function() { $this->_applyWithArgs("rule_seq", y); });
+              $this->_apply("rule_char");
             });
-            $this->_applyWithArgs("seq", y);
+            $this->_applyWithArgs("rule_seq", y);
         });
   }
 
@@ -570,13 +599,15 @@ class OMetaBase
       $m->initialize();
       $m->matchAll = function($listyObj, $aRule) {
         $this->input = $listyObj->toOMInputStream();
+
         return $this->_apply($aRule);
       }
+
       return $m;
   }*/
 }
 
-if(false === function_exists('objectThatDelegatesTo')) {
+if (false === function_exists('objectThatDelegatesTo')) {
     function objectThatDelegatesTo($x, $props)
     {
       $rule = new $x();
@@ -590,7 +621,7 @@ if(false === function_exists('objectThatDelegatesTo')) {
     }
 }
 
-if(false === function_exists('isImmutable')) {
+if (false === function_exists('isImmutable')) {
     function isImmutable($x)
     {
        return $x === null
