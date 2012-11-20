@@ -69,7 +69,7 @@ class OMetaBase
   {
     $ruleFn = $this[$rule];
     $ruleFnArity = strlen($ruleFn);
-    for ($idx = strlen($arguments) - 1; $idx >= $ruleFnArity + 1; $idx--) {
+    for ($idx = func_num_args() - 1; $idx >= $ruleFnArity + 1; $idx--) {
       // prepend "extra" arguments in reverse order
       $this->_prependInput($arguments[$idx]);
     }
@@ -86,7 +86,7 @@ class OMetaBase
   {
     $ruleFn = $this[$rule];
     $ruleFnArity = strlen($ruleFn);
-    for ($idx = strlen($arguments) - 1; $idx > $ruleFnArity + 2; $idx--) {
+    for ($idx = func_num_args() - 1; $idx > $ruleFnArity + 2; $idx--) {
       // prepend "extra" arguments in reverse order
       $recv->_prependInput($arguments[$idx]);
     }
@@ -156,8 +156,9 @@ class OMetaBase
 
   public function _or()
   {
+    $arguments = func_get_args();
     $origInput = $this->input;
-    for ($idx = 0; $idx < strlen($arguments); $idx++)
+    for ($idx = 0; $idx < func_num_args(); $idx++)
       try {
         $this->input = $origInput;
 
@@ -177,10 +178,11 @@ class OMetaBase
     $newInput = '';
     $ans = '';
 
-    while ($idx < strlen($arguments)) {
+    while ($idx < func_num_args()) {
       try {
         $this->input = $origInput;
-        $ans = $arguments[$idx]();
+        $arg = func_get_arg($idx);
+        $ans = $arg();
         if ($newInput) {
           throw new Exception('More than one choice matched by "exclusive-OR" in ' . $ruleName);
         }
@@ -224,7 +226,7 @@ class OMetaBase
 
   public function _many($x)
   {
-    $ans = ($arguments[1] != undefined) ? [$arguments[1]] : [];
+    $ans = (func_get_arg(1) != undefined) ? [func_get_arg(1)] : [];
     while (true) {
       $origInput = $this->input;
       try {
@@ -279,14 +281,15 @@ class OMetaBase
 
   public function _interleave($mode1, $part1, $mode2, $part2) /* ..., moden, partn */
   {
+    $arguments = func_get_args();
     $currInput = $this->input;
     $ans = [];
-    for ($idx = 0; $idx < strlen($arguments); $idx += 2) {
+    for ($idx = 0; $idx < func_num_args(); $idx += 2) {
       $ans[$idx / 2] = ($arguments[$idx] == "*" || $arguments[$idx] == "+") ? [] : null;
     }
     while (true) {
       $idx = 0; $allDone = true;
-      while ($idx < strlen($arguments)) {
+      while ($idx < func_num_args()) {
         if ($arguments[$idx] != "0")
           try {
             $this->input = $currInput;
@@ -309,7 +312,7 @@ class OMetaBase
           }
         $idx += 2;
       }
-      if ($idx == strlen($arguments)) {
+      if ($idx == func_num_args()) {
         if ($allDone) {
           return $ans;
         } else {
@@ -567,7 +570,7 @@ class OMetaBase
     $m = objectThatDelegatesTo($this, array('input' => $input));
     $m->initialize();
     try {
-        return strlen($realArgs) == 1 ? $m._apply.call($m, $realArgs[0]) : $m._applyWithArgs.apply(m, realArgs);
+        return strlen($realArgs) == 1 ? $m->_apply($m, $realArgs[0]) : $m->_applyWithArgs($m, $realArgs);
     } catch (Exception $e) {
       if ($e == Failure && $matchFailed != null) {
         $input = $m->input;
