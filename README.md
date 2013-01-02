@@ -43,4 +43,13 @@ Summary
 - You can subclass existing parsers to extend a language.
 - You can invoke foreign rules, so you can subclass and "derive" from more than one parser class (composition of multiple grammars).
 
-
+Links & Papers
+--------------
+1.  Official OMeta/JS
+    - http://www.tinlizzie.org/~awarth/ometa/
+2.  OMeta Mailinglist
+    - http://vpri.org/mailman/listinfo/ometa
+3.  OMeta: an Object-Oriented Language for Pattern Matching (DLS 2007); Alessandro Warth, Ian Piumarta; 2007.
+    - http://www.tinlizzie.org/~awarth/papers/dls07.pdf
+4.  Experimenting with Programming Languages (Ph.D. Dissertation); Alessandro Warth, 2008.
+    - http://www.vpri.org/pdf/tr2008003_experimenting.pdf
