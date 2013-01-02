@@ -51,9 +51,10 @@ Links & Papers
    - http://vpri.org/mailman/listinfo/ometa
 3. [WP07] Alessandro Warth and Ian Piumarta. OMeta: an Object-Oriented Language for Pattern Matching.
    In DLS ’07: Proceedings of the 2007 symposium on Dynamic languages, pages 11–19, New York, NY, USA, 2007. ACM.
-   - (Available at http://www.cs.ucla.edu/~awarth/papers/dls07.pdf).
+   - http://www.cs.ucla.edu/~awarth/papers/dls07.pdf
 4. Alessandro Warth, Experimenting with Programming Languages, PhD dissertation, 2009,
-   - (Available at http://www.vpri.org/pdf/tr2008003_experimenting.pdf).
+   - http://www.vpri.org/pdf/tr2008003_experimenting.pdf
 5. [For04] Bryan Ford. Parsing expression grammars: a recognition-based syntactic foundation.
    In POPL ’04: Proceedings of the 31st ACM SIGPLAN-SIGACT symposium on Principles of programming languages,
    pages 111–122, New York, NY, USA, 2004. ACM.
+   - http://www.brynosaurus.com/pub/lang/peg.pdf
