@@ -17,4 +17,3 @@ set_include_path(implode(PATH_SEPARATOR, $paths));
 if (is_file(__DIR__ . '/../vendor/autoload.php')) {
     include_once __DIR__ . '/../vendor/autoload.php';
 }
-

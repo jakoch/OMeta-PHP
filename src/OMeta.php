@@ -1,5 +1,5 @@
 <?php
-namespace phpc;
+namespace OMeta;
 
 class OMeta
 {

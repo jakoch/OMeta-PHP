@@ -1,5 +1,5 @@
 <?php
-namespace Phpc;
+namespace OMeta;
 
 /**
  * OMeta Base class provides basic functionality.
