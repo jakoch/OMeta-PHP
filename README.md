@@ -38,9 +38,9 @@ So you might call the generated PHP parser a meta-language hosted in PHP.
 
 Summary
 ------
-OMeta-PHP is metalanguage.
-You can create new language constructs, and create DSLs.
-You can subclass existing parsers to extend a language.
-You can invoke foreign rules, so you can subclass and "derive" from more than one parser class (composition of multiple grammars).
+- OMeta-PHP is metalanguage.
+- You can create new language constructs, and create DSLs.
+- You can subclass existing parsers to extend a language.
+- You can invoke foreign rules, so you can subclass and "derive" from more than one parser class (composition of multiple grammars).
 
 
