@@ -13,3 +13,34 @@ way for programmers to implement tokenizers, parsers, visitors, and tree transfo
 extended in interesting ways using familiar object-oriented mechanisms.
 This makes OMeta particularly well-suited as a medium for experimenting with new designs
 for programming languages and extensions to existing languages.
+
+PEG
+---
+
+Parsing expression grammars (PEGs) are an alternative to context free grammars (CFGs) for formally
+specifying syntax. PEGs are backtracking (unlimited lookahead) parsers with speculative parsing support.
+Speculative Parsing is controled by syntactic predicates (grammar fragments),
+specifying the lookahead and predicting an alternative.
+The operator in the grammar is called "prioritized choice"-operator (|) - this rule "OR" that rule.
+To avoid unneccessay reparsing partial parsing results are cached - this is called Memoizing.
+Bryan Ford coined the term "Packrat Parser" for a "memoizing recursive-descent parser" in
+Packrat parsing: simple, powerful, lazy, linear time, functional pearl (http://bford.info/packrat/).
+
+A PEG is something like a Regular Expressions with recursion.
+PEGs operate on streams of characters.
+The grammars are like templates with a parser combination description.
+Basically a PEG is a set of combinators.
+Each combinator is a function, which generates an atomic unit of a parser (called a rule).
+By combining these parts (uhm, with combinators), you can generate complex parsers that
+can handle a superset of Context Free Grammars.
+The created parsers are data-structure agnostic. They can parse any input sequence.
+So you might call the generated PHP parser a meta-language hosted in PHP.
+
+Summary
+------
+OMeta-PHP is metalanguage.
+You can create new language constructs, and create DSLs.
+You can subclass existing parsers to extend a language.
+You can invoke foreign rules, so you can subclass and "derive" from more than one parser class (composition of multiple grammars).
+
+
