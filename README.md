@@ -1,6 +1,8 @@
 OMeta-PHP
 =========
 
+Work in progress: JS to PHP port
+
 Brief Overview
 --------------
 
